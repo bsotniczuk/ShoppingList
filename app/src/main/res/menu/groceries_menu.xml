@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".GroceriesActivity">
+
+    <item
+        android:id="@+id/action_archive"
+        android:icon="@drawable/ic_baseline_archive_24"
+        android:orderInCategory="100"
+        android:title="archive"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_remove"
+        android:icon="@drawable/ic_baseline_delete_forever_24"
+        android:orderInCategory="100"
+        android:title="delete"
+        app:showAsAction="ifRoom" />
+</menu>

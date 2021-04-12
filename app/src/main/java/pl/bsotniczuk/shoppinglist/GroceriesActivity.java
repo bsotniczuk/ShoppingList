@@ -11,6 +11,7 @@ import pl.bsotniczuk.shoppinglist.data.viewmodel.GroceryViewModel;
 import pl.bsotniczuk.shoppinglist.data.viewmodel.ShoppingViewModel;
 import pl.bsotniczuk.shoppinglist.fragment.GroceryListFragment;
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.text.InputType;
@@ -32,6 +33,7 @@ public class GroceriesActivity extends AppCompatActivity {
     private int idInDb;
     List<ShoppingItem> shoppingList;
 
+    @SuppressLint("UseCompatLoadingForDrawables")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,6 +68,12 @@ public class GroceriesActivity extends AppCompatActivity {
             }
         });
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new GroceryListFragment()).commit();
+    }
+
+    @Override
+    protected void onDestroy() {
+        MainActivity.groceriesActivityOpened = 0;
+        super.onDestroy();
     }
 
     private void ensureNotNullShoppingItem() {
@@ -140,7 +148,7 @@ public class GroceriesActivity extends AppCompatActivity {
             public void onChanged(List<GroceryItem> groceryItems) {
                 int count = 0;
                 for (GroceryItem a : groceryItems) {
-                    if (a.getDone() == true)
+                    if (a.getDone())
                         count++;
                 }
                 String description = count + "/" + groceryItems.size();
@@ -156,7 +164,10 @@ public class GroceriesActivity extends AppCompatActivity {
         shoppingViewModel.updateShoppingDescriptionById(id, description);
     }
 
+    private AlertDialog alertToShow;
+
     public void popUpTextBox(String title, String message, String positiveButtonText, String negativeButtonText) {
+        if (alertToShow != null && alertToShow.isShowing()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
         //builder.setMessage(message);
@@ -198,8 +209,7 @@ public class GroceriesActivity extends AppCompatActivity {
                 dialog.cancel();
             }
         });
-        //automatically popping up keyboard
-        AlertDialog alertToShow = builder.create();
+        alertToShow = builder.create();
         alertToShow.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         alertToShow.show();
     }

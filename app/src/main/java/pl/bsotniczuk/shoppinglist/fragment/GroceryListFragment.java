@@ -66,7 +66,7 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
 
     @Override
     public void onMessageClick(int position, boolean isButton) {
-        if (isButton == false)
+        if (!isButton)
             popUpTextBox(position, "Edit grocery", "", "Edit", "Cancel");
         else {
             updateGroceryItem(groceryList.get(position).getId(), !groceryList.get(position).getDone());
@@ -106,7 +106,7 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
             public void onChanged(List<GroceryItem> groceryItems) {
                 int count = 0;
                 for (GroceryItem a : groceryItems) {
-                    if (a.getDone() == true)
+                    if (a.getDone())
                         count++;
                 }
                 String description = count + "/" + groceryItems.size();
@@ -124,7 +124,6 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
 
     private void readGroceriesByShoppingIdSortByDate(int id) {
         groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
-
         final Observer<List<GroceryItem>> groceryObserver5 = new Observer<List<GroceryItem>>() {
             @Override
             public void onChanged(List<GroceryItem> groceryItems) {
@@ -141,7 +140,11 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
         recyclerView.setAdapter(adapter);
     }
 
+    private AlertDialog alertToShow;
+
     public void popUpTextBox(int position, String title, String message, String positiveButtonText, String negativeButtonText) {
+        if (alertToShow != null && alertToShow.isShowing()) return;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(title);
         LinearLayout layout = new LinearLayout(getContext());
@@ -174,7 +177,7 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
                 else
                     name = input_name.getText().toString();
 
-                updateGroceryItem(groceryList.get(position).getId(), name, quantity, false, groceryList.get(position).getId_of_shopping_list_item());
+                updateGroceryItem(groceryList.get(position).getId(), name, quantity, groceryList.get(position).getDone(), groceryList.get(position).getId_of_shopping_list_item());
             }
         });
         builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
@@ -186,8 +189,7 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
         input_name.setText(groceryList.get(position).getProduct_name());
         input_quantity.setText("" + groceryList.get(position).getQuantity());
 
-        //automatically popping up keyboard
-        AlertDialog alertToShow = builder.create();
+        alertToShow = builder.create();
         alertToShow.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         alertToShow.show();
     }

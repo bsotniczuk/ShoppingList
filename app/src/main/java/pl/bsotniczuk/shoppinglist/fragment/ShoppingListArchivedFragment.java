@@ -88,7 +88,10 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
         shoppingViewModel.updateShoppingArchivedById(idOfShoppingItem, isArchived);
     }
 
+    private AlertDialog alertToShow;
+
     public void popUpTextBox(int position, String title, String message, String positiveButtonText, String negativeButtonText) {
+        if (alertToShow != null && alertToShow.isShowing()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(title);
         builder.setMessage(message);
@@ -105,8 +108,7 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
                 dialog.cancel();
             }
         });
-        //automatically popping up keyboard
-        AlertDialog alertToShow = builder.create();
+        alertToShow = builder.create();
         alertToShow.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         alertToShow.show();
     }

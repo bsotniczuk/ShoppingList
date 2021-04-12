@@ -24,7 +24,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import pl.bsotniczuk.shoppinglist.R;
 import pl.bsotniczuk.shoppinglist.adapter.AdapterRecyclerGrocery;
-import pl.bsotniczuk.shoppinglist.adapter.AdapterRecyclerShopping;
 import pl.bsotniczuk.shoppinglist.data.model.GroceryItem;
 import pl.bsotniczuk.shoppinglist.data.model.ShoppingItem;
 import pl.bsotniczuk.shoppinglist.data.viewmodel.GroceryViewModel;
@@ -35,14 +34,11 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
     RecyclerView recyclerView;
     AdapterRecyclerGrocery adapter;
     List<GroceryItem> groceryList;
-    //List<ShoppingItem> shoppingItems;
 
     private int idInDb;
 
     private GroceryViewModel groceryViewModel;
     AdapterRecyclerGrocery.OnMessageClickListener onMessageClickListener;
-
-    static String tag = "ShoppingApp"; //to delete
 
     public GroceryListFragment() {
     }
@@ -52,7 +48,7 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
                              Bundle savedInstanceState) {
         groceryList = new ArrayList<>();
         this.onMessageClickListener = this;
-        // Inflate the layout for this fragment
+
         View view = inflater.inflate(R.layout.fragment_shopping_list, container, false);
         recyclerView = view.findViewById(R.id.recyclerView1);
         adapter = new AdapterRecyclerGrocery(view.getContext(), groceryList, this);
@@ -63,15 +59,32 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
 
         if (idInDb > 0)
             readGroceriesByShoppingIdSortByDate(idInDb);
-        else { //where element is created
+        else //adding new shopping list
             readShoppingItemNotArchivedSortByDate();
-        }
         return view;
     }
 
     @Override
-    public void onMessageClick(int position) {
-        popUpTextBox(position, "Edit grocery", "", "Edit", "Cancel");
+    public void onMessageClick(int position, boolean isButton) {
+        if (isButton == false)
+            popUpTextBox(position, "Edit grocery", "", "Edit", "Cancel");
+        else {
+            updateGroceryItem(groceryList.get(position).getId(), !groceryList.get(position).getDone());
+            readAllGroceryForShoppingIdAndUpdateDescription(idInDb);
+            Log.i("ShoppingList", "done in id: " + groceryList.get(position).getId() + " | done: " + groceryList.get(position).getDone());
+        }
+    }
+
+    private void updateGroceryItem(int id, boolean isDone) {
+        GroceryViewModel groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
+        groceryViewModel.updateGroceryDoneById(id, isDone);
+    }
+
+    private void updateGroceryItem(int id, String nameOfGrocery, int quantity, boolean isDone, int idOfShoppingItem) {
+        GroceryViewModel groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
+        Date date = new Date();
+        GroceryItem groceryItem = new GroceryItem(id, nameOfGrocery, quantity, isDone, date, idOfShoppingItem);
+        groceryViewModel.updateGrocery(groceryItem);
     }
 
     private void readShoppingItemNotArchivedSortByDate() {
@@ -79,7 +92,6 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
         final Observer<List<ShoppingItem>> groceryObserver4 = new Observer<List<ShoppingItem>>() {
             @Override
             public void onChanged(List<ShoppingItem> shoppingItems) {
-                Log.i("ShoppingList", "???Observer: item changed, got id: " + shoppingItems.get(0).getId());
                 idInDb = shoppingItems.get(0).getId();
                 readGroceriesByShoppingIdSortByDate(idInDb);
             }
@@ -87,10 +99,32 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
         shoppingViewModel.getReadAllNotArchivedSortByDate().observe(getViewLifecycleOwner(), groceryObserver4);
     }
 
+    private void readAllGroceryForShoppingIdAndUpdateDescription(int id) {
+        GroceryViewModel groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
+        final Observer<List<GroceryItem>> groceryObserver3 = new Observer<List<GroceryItem>>() {
+            @Override
+            public void onChanged(List<GroceryItem> groceryItems) {
+                int count = 0;
+                for (GroceryItem a : groceryItems) {
+                    if (a.getDone() == true)
+                        count++;
+                }
+                String description = count + "/" + groceryItems.size();
+                updateShoppingDescription(id, description);
+            }
+        };
+        groceryViewModel.readAllGroceryForShoppingId(id).observe(this, groceryObserver3);
+    }
+
+    private void updateShoppingDescription(int id, String descr) {
+        String description = "Groceries done " + descr;
+        ShoppingViewModel shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
+        shoppingViewModel.updateShoppingDescriptionById(id, description);
+    }
+
     private void readGroceriesByShoppingIdSortByDate(int id) {
         groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
 
-        //observer can be easily mounted on the beginning of the app, because it will log all the changes
         final Observer<List<GroceryItem>> groceryObserver5 = new Observer<List<GroceryItem>>() {
             @Override
             public void onChanged(List<GroceryItem> groceryItems) {
@@ -105,13 +139,6 @@ public class GroceryListFragment extends Fragment implements AdapterRecyclerGroc
         adapter = new AdapterRecyclerGrocery(context, groceryItems, onMessageClickListener);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(adapter);
-    }
-
-    private void updateGroceryItem(int id, String nameOfGrocery, int quantity, boolean isDone, int idOfShoppingItem) {
-        GroceryViewModel groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
-        Date date = new Date();
-        GroceryItem groceryItem = new GroceryItem(id, nameOfGrocery, quantity, isDone, date, idOfShoppingItem);
-        groceryViewModel.updateGrocery(groceryItem);
     }
 
     public void popUpTextBox(int position, String title, String message, String positiveButtonText, String negativeButtonText) {

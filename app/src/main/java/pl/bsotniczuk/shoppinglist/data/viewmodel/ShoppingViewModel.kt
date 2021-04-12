@@ -12,8 +12,6 @@ import pl.bsotniczuk.shoppinglist.data.repository.ShoppingRepository
 
 class ShoppingViewModel(application: Application): AndroidViewModel(application) {
 
-    val readAllData: LiveData<List<ShoppingItem>> //to delete
-    val readAllSortByDate: LiveData<List<ShoppingItem>> //to delete
     val readLastAdded: LiveData<List<ShoppingItem>>
     val readAllNotArchivedSortByDate: LiveData<List<ShoppingItem>>
     val readAllArchivedSortByDate: LiveData<List<ShoppingItem>>
@@ -23,8 +21,6 @@ class ShoppingViewModel(application: Application): AndroidViewModel(application)
         val shoppingDao = GroceryDatabase.getDatabase(application).shoppingDao()
         repository = ShoppingRepository(shoppingDao)
 
-        readAllData = repository.readAllData //to delete
-        readAllSortByDate = repository.readAllSortByDate //to delete
         readLastAdded = repository.readLastAdded
         readAllNotArchivedSortByDate = repository.readAllNotArchivedSortByDate
         readAllArchivedSortByDate = repository.readAllArchivedSortByDate
@@ -45,6 +41,12 @@ class ShoppingViewModel(application: Application): AndroidViewModel(application)
     fun updateShoppingDescriptionById(id: Int, descr: String) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.updateShoppingDescriptionById(id, descr)
+        }
+    }
+
+    fun updateShoppingArchivedById(id: Int, isArchived: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateShoppingArchivedById(id, isArchived)
         }
     }
 

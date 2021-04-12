@@ -36,6 +36,12 @@ class GroceryViewModel(application: Application): AndroidViewModel(application) 
         }
     }
 
+    fun updateGroceryDoneById(id: Int, isDone: Boolean) {
+        viewModelScope.launch(Dispatchers.IO) {
+            repository.updateGroceryDoneById(id, isDone)
+        }
+    }
+
     fun deleteGrocery(groceryItem: GroceryItem) {
         viewModelScope.launch(Dispatchers.IO) {
             repository.deleteGrocery(groceryItem)
@@ -56,9 +62,5 @@ class GroceryViewModel(application: Application): AndroidViewModel(application) 
 
     fun readAllGroceryForShoppingId(id: Int): LiveData<List<GroceryItem>> {
         return repository.readAllGroceryForShoppingId(id)
-    }
-
-    fun readAllGroceryForShoppingIdThatAreDone(id: Int): LiveData<List<GroceryItem>> {
-        return repository.readAllGroceryForShoppingIdThatAreDone(id)
     }
 }

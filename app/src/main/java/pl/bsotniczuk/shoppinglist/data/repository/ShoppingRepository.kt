@@ -6,8 +6,6 @@ import pl.bsotniczuk.shoppinglist.data.model.ShoppingItem
 
 class ShoppingRepository(private val shoppingDao: ShoppingDao) {
 
-    val readAllData: LiveData<List<ShoppingItem>> = shoppingDao.readAllData() //to delete
-    val readAllSortByDate: LiveData<List<ShoppingItem>> = shoppingDao.readAllSortByDate() //to delete
     val readLastAdded: LiveData<List<ShoppingItem>> = shoppingDao.readLastAdded()
     val readAllNotArchivedSortByDate: LiveData<List<ShoppingItem>> = shoppingDao.readAllNotArchivedSortByDate()
     val readAllArchivedSortByDate: LiveData<List<ShoppingItem>> = shoppingDao.readAllArchivedSortByDate()
@@ -22,6 +20,10 @@ class ShoppingRepository(private val shoppingDao: ShoppingDao) {
 
     suspend fun updateShoppingDescriptionById(id: Int, descr: String) {
         shoppingDao.updateShoppingDescriptionById(id, descr)
+    }
+
+    suspend fun updateShoppingArchivedById(id: Int, isArchived: Boolean) {
+        shoppingDao.updateShoppingArchivedById(id, isArchived)
     }
 
     suspend fun deleteShoppingItem(shoppingItem: ShoppingItem) {

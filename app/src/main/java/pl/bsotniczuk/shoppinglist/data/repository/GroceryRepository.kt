@@ -17,6 +17,10 @@ class GroceryRepository(private val groceryDao: GroceryDao) {
         groceryDao.updateGrocery(groceryItem)
     }
 
+    suspend fun updateGroceryDoneById(id: Int, isDone: Boolean) {
+        groceryDao.updateGroceryDoneById(id, isDone)
+    }
+
     suspend fun deleteGrocery(groceryItem: GroceryItem) {
         groceryDao.deleteGrocery(groceryItem)
     }
@@ -33,7 +37,4 @@ class GroceryRepository(private val groceryDao: GroceryDao) {
         return groceryDao.readAllGroceryForShoppingId(id)
     }
 
-    fun readAllGroceryForShoppingIdThatAreDone(id: Int) : LiveData<List<GroceryItem>> {
-        return groceryDao.readAllGroceryForShoppingIdThatAreDone(id)
-    }
 }

@@ -7,11 +7,14 @@ import pl.bsotniczuk.shoppinglist.data.model.GroceryItem
 @Dao
 interface GroceryDao {
 
-    @Insert/*(onConflict = OnConflictStrategy.IGNORE)*/ //use this in shoppinglist maybe
+    @Insert
     fun addGrocery(groceryItem: GroceryItem)
 
     @Update
     suspend fun updateGrocery(groceryItem: GroceryItem)
+
+    @Query ("UPDATE grocery_table SET done = :isDone WHERE id = :id")
+    suspend fun updateGroceryDoneById(id: Int, isDone: Boolean)
 
     @Delete
     suspend fun deleteGrocery(groceryItem: GroceryItem)
@@ -26,15 +29,14 @@ interface GroceryDao {
     fun readAllSortByDate(): LiveData<List<GroceryItem>>//List<GroceryItem>
 
     @Query("SELECT * FROM grocery_table WHERE id_of_shopping_list_item = :id ORDER BY date DESC")
-    fun readAllGroceryForShoppingId(id: Int): LiveData<List<GroceryItem>>//List<GroceryItem>
-
-    // you can use readAllGroceryForShoppingId and then programatically get all done to get count of all with exact shopping id and count all done with the exact shopping id
-    @Query("SELECT * FROM grocery_table WHERE id_of_shopping_list_item = :id AND done = 1")
-    fun readAllGroceryForShoppingIdThatAreDone(id: Int): LiveData<List<GroceryItem>>//List<GroceryItem>
-
-    @Query("SELECT * FROM grocery_table ORDER BY product_name ASC")
-    fun getAlphabetizedWords(): LiveData<List<GroceryItem>>//List<GroceryItem>
+    fun readAllGroceryForShoppingId(id: Int): LiveData<List<GroceryItem>>
 
     @Query("DELETE FROM grocery_table")
     suspend fun deleteAll()
+
+    @Query("SELECT * FROM grocery_table WHERE product_name = :name ORDER BY id ASC LIMIT 1")
+    fun findGroceryByName(name: String): GroceryItem
+
+    /*@Query("SELECT * FROM grocery_table WHERE product_name = :name ORDER BY id ASC LIMIT 1")
+    fun findGroceryByName(name: String): LiveData<List<GroceryItem>>*/
 }

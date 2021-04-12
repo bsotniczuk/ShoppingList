@@ -5,7 +5,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.viewpager.widget.ViewPager;
 import pl.bsotniczuk.shoppinglist.data.model.GroceryItem;
 import pl.bsotniczuk.shoppinglist.data.model.ShoppingItem;
 import pl.bsotniczuk.shoppinglist.data.viewmodel.GroceryViewModel;
@@ -13,7 +12,6 @@ import pl.bsotniczuk.shoppinglist.data.viewmodel.ShoppingViewModel;
 import pl.bsotniczuk.shoppinglist.fragment.GroceryListFragment;
 
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -33,18 +31,17 @@ public class GroceriesActivity extends AppCompatActivity {
 
     private int idInDb;
     List<ShoppingItem> shoppingList;
-    private MenuItem actionArchive;
-    private MenuItem actionRemove;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_groceries);
 
+        MainActivity.groceriesActivityOpened++;
+        Log.i("ShoppingList", "activities opened count: " + MainActivity.groceriesActivityOpened);
+
         if (MainActivity.groceriesActivityOpened > 1)
             finish(); //ensure that only one GroceryActivity is opened
-
-        Log.i("ShoppingList", "activities opened count: " + MainActivity.groceriesActivityOpened);
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -53,46 +50,49 @@ public class GroceriesActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //What to do on back clicked
                 backPressAction();
             }
         });
-
         idInDb = getIntent().getIntExtra("id_in_db", -1);
 
-        readDataFromDatabaseNotArchivedSortByDate();
+        readDataFromDatabaseNotArchivedSortByDate(); //read shopping lists, to get id for newly added shopping list
 
         FloatingActionButton fab = findViewById(R.id.fab1);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (idInDb < 0) {
-                    if (shoppingList.size() > 0) {
-                        idInDb = shoppingList.get(0).getId();
-                    }
-                }
+                ensureNotNullShoppingItem();
                 popUpTextBox("Add new Grocery", "b", "add", "cancel");
             }
         });
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new GroceryListFragment()).commit();
     }
 
+    private void ensureNotNullShoppingItem() {
+        if (idInDb < 0)
+            if (shoppingList.size() > 0)
+                idInDb = shoppingList.get(0).getId();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.groceries_menu, menu);
-        actionArchive = menu.findItem(R.id.action_archive);
-        actionRemove = menu.findItem(R.id.action_remove);
-
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        ensureNotNullShoppingItem();
 
         if (id == R.id.action_archive) {
+            updateCurrentShoppingItemArchived(idInDb, true);
+            backPressAction();
             return true;
         } else if (id == R.id.action_remove) {
+            deleteCurrentShoppingItem(idInDb); //delete shopping item
+            deleteAllGroceriesWithShoppingId(idInDb); //delete all groceries related with that shopping item
+            backPressAction();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -106,15 +106,31 @@ public class GroceriesActivity extends AppCompatActivity {
         readAllGroceryForShoppingIdAndUpdateDescription(idOfShoppingItem);
     }
 
+    private void updateCurrentShoppingItemArchived(int idOfShoppingItem, boolean isArchived) {
+        ShoppingViewModel shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
+        shoppingViewModel.updateShoppingArchivedById(idOfShoppingItem, isArchived);
+    }
+
+    private void deleteCurrentShoppingItem(int idOfShoppingItem) {
+        ShoppingViewModel shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
+        shoppingViewModel.deleteShoppingListWithId(idOfShoppingItem);
+    }
+
+    private void deleteAllGroceriesWithShoppingId(int idOfShoppingItem) {
+        GroceryViewModel groceryViewModel = new ViewModelProvider(this).get(GroceryViewModel.class);
+        groceryViewModel.deleteGroceriesWithShoppingId(idOfShoppingItem);
+    }
+
     private void readDataFromDatabaseNotArchivedSortByDate() {
         ShoppingViewModel shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
-        final Observer<List<ShoppingItem>> groceryObserver3 = new Observer<List<ShoppingItem>>() {
+        final Observer<List<ShoppingItem>> shoppingObserver3 = new Observer<List<ShoppingItem>>() {
             @Override
             public void onChanged(List<ShoppingItem> shoppingItems) {
                 shoppingList = shoppingItems;
+                ensureNotNullShoppingItem();
             }
         };
-        shoppingViewModel.getReadAllNotArchivedSortByDate().observe(this, groceryObserver3);
+        shoppingViewModel.getReadAllNotArchivedSortByDate().observe(this, shoppingObserver3);
     }
 
     private void readAllGroceryForShoppingIdAndUpdateDescription(int id) {
@@ -166,7 +182,7 @@ public class GroceriesActivity extends AppCompatActivity {
                 int quantity;
 
                 if (input_quantity.getText().toString().compareToIgnoreCase("") == 0)
-                    quantity = 0;
+                    quantity = 1; //when user didnt write anything set 1
                 else
                     quantity = Integer.parseInt(input_quantity.getText().toString());
 

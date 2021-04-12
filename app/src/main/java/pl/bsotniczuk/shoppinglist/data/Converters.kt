@@ -3,8 +3,6 @@ package pl.bsotniczuk.shoppinglist.data
 import androidx.room.TypeConverter
 import java.util.*
 
-//import java.sql.Date
-
 class Converters {
     @TypeConverter
     fun fromTimestamp(value: Long?): Date? {

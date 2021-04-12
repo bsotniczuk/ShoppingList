@@ -14,7 +14,6 @@ import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -28,9 +27,7 @@ import pl.bsotniczuk.shoppinglist.ui.main.SectionsPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
 
-    //TODO: add application icon
     private ShoppingViewModel shoppingViewModel; //to delete
-    static String tag = "ShoppingApp";
     public static int groceriesActivityOpened = 0; //not elegant but works perfectly, singleTop can be cheated without that, now user cannot open three MessageActivities at once
 
     @Override
@@ -56,8 +53,7 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                popUpTextBox("Create new shopping list", "Leave that field empty to set a default shopping list name.", "Save", "Cancel");
-                //insertDataToDatabaseShoppingItem("Shopping List, archived = true", true); //to delete
+                popUpTextBox(getString(R.string.new_shopping_list), getString(R.string.message_add_shopping_list), getString(R.string.save), getString(R.string.cancel));
             }
         });
     }
@@ -65,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private void insertDataToDatabaseShoppingItem(String name, boolean isArchived) {
         shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
         Date date = new Date();
-        ShoppingItem shoppingItem = new ShoppingItem(0, name, "No groceries added", isArchived, date);
+        ShoppingItem shoppingItem = new ShoppingItem(0, name, getString(R.string.no_groceries_added), isArchived, date);
         shoppingViewModel.addShoppingItem(shoppingItem);
     }
 
@@ -87,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     insertDataToDatabaseShoppingItem(m_Text, false);
                 }
-                groceriesActivityOpened++;
                 Intent intent = new Intent(getApplicationContext(), GroceriesActivity.class);
                 intent.putExtra("id_in_db", -1);
                 startActivity(intent);

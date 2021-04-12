@@ -17,19 +17,14 @@ interface ShoppingDao {
     @Query ("UPDATE shopping_table SET description = :descr WHERE id = :id")
     suspend fun updateShoppingDescriptionById(id: Int, descr: String)
 
+    @Query ("UPDATE shopping_table SET is_archived = :isArchived WHERE id = :id")
+    suspend fun updateShoppingArchivedById(id: Int, isArchived: Boolean)
+
     @Delete
     suspend fun deleteShoppingItem(shoppingItem: ShoppingItem)
 
     @Query("DELETE FROM shopping_table WHERE id = :id")
     suspend fun deleteShoppingItemWithId(id: Int)
-
-    //to delete
-    @Query("SELECT * FROM shopping_table ORDER BY id ASC")
-    fun readAllData(): LiveData<List<ShoppingItem>>
-
-    //to delete
-    @Query("SELECT * FROM shopping_table ORDER BY date DESC")
-    fun readAllSortByDate(): LiveData<List<ShoppingItem>>
 
     @Query("SELECT * FROM shopping_table ORDER BY date DESC LIMIT 1")
     fun readLastAdded(): LiveData<List<ShoppingItem>>

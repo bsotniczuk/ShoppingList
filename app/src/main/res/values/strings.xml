@@ -15,4 +15,9 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="action_add">action_add</string>
     <string name="shopping_list_details">Shopping list details</string>
+    <string name="new_shopping_list">Create a new shopping list</string>
+    <string name="message_add_shopping_list">Leave that field empty to set a default shopping list name.</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="no_groceries_added">No groceries added</string>
 </resources>

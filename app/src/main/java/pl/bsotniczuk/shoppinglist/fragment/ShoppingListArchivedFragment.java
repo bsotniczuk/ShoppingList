@@ -1,24 +1,29 @@
 package pl.bsotniczuk.shoppinglist.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import pl.bsotniczuk.shoppinglist.GroceriesActivity;
 import pl.bsotniczuk.shoppinglist.R;
 import pl.bsotniczuk.shoppinglist.adapter.AdapterRecyclerShopping;
-import pl.bsotniczuk.shoppinglist.data.model.GroceryItem;
 import pl.bsotniczuk.shoppinglist.data.model.ShoppingItem;
-import pl.bsotniczuk.shoppinglist.data.viewmodel.GroceryViewModel;
 import pl.bsotniczuk.shoppinglist.data.viewmodel.ShoppingViewModel;
 
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.EditText;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,24 +61,16 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
     @Override
     public void onMessageClick(int position) {
         Log.i(tag, "position: " + position + " | clicked | id: " + shoppingList.get(position).getId() + " | time: " + shoppingList.get(position).getDate().getTime() + " | name: " + shoppingList.get(position).getShopping_list_name());
+        popUpTextBox(position, "Unarchive", "Do you want to unarchive that item?", "Yes", "No");
     }
 
     private void readDataFromDatabaseArchivedSortByDate() {
         shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
 
-        //observer can be easily mounted on the beginning of the app, because it will log all the changes
         final Observer<List<ShoppingItem>> groceryObserver2 = new Observer<List<ShoppingItem>>() {
             @Override
             public void onChanged(List<ShoppingItem> shoppingItems) {
-                Log.i(tag, "Observer: item changed");
                 shoppingList = shoppingItems;
-
-                //debug to delete
-                for (ShoppingItem a : shoppingItems)
-                    Log.i("ShoppingApp", "DB date: " + a.getDate().getTime() + " | id: " + a.getId() + " | name: " + a.getShopping_list_name() + " | description: " + a.getDescription() + " | is archived: " + a.is_archived());
-                if (shoppingItems.size() > 0)
-                    Log.i("ShoppingApp", "last el DB date: " + shoppingItems.get(0).getDate().getTime());
-
                 populateRecyclerView(getContext(), shoppingItems, onMessageClickListener);
             }
         };
@@ -84,5 +81,33 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
         adapter = new AdapterRecyclerShopping(context, shoppingItems, onMessageClickListener);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(adapter);
+    }
+
+    private void updateCurrentShoppingItemArchived(int idOfShoppingItem, boolean isArchived) {
+        ShoppingViewModel shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
+        shoppingViewModel.updateShoppingArchivedById(idOfShoppingItem, isArchived);
+    }
+
+    public void popUpTextBox(int position, String title, String message, String positiveButtonText, String negativeButtonText) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        builder.setTitle(title);
+        builder.setMessage(message);
+
+        builder.setPositiveButton(positiveButtonText, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                updateCurrentShoppingItemArchived(shoppingList.get(position).getId(), false);
+            }
+        });
+        builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        //automatically popping up keyboard
+        AlertDialog alertToShow = builder.create();
+        alertToShow.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        alertToShow.show();
     }
 }

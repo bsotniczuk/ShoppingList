@@ -12,18 +12,17 @@ import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import pl.bsotniczuk.shoppinglist.R;
-import pl.bsotniczuk.shoppinglist.data.model.GroceryItem;
 import pl.bsotniczuk.shoppinglist.data.model.ShoppingItem;
 
 public class AdapterRecyclerShopping extends RecyclerView.Adapter<AdapterRecyclerShopping.MyViewHolder> {
 
     private Context mContext;
-    private List<ShoppingItem> messageModelList;
+    private List<ShoppingItem> shoppingItems;
     private OnMessageClickListener onMessageClickListener;
 
-    public AdapterRecyclerShopping(Context mContext, List<ShoppingItem> messageModelList, OnMessageClickListener onMessageClickListener) {
+    public AdapterRecyclerShopping(Context mContext, List<ShoppingItem> shoppingItems, OnMessageClickListener onMessageClickListener) {
         this.mContext = mContext;
-        this.messageModelList = messageModelList;
+        this.shoppingItems = shoppingItems;
         this.onMessageClickListener = onMessageClickListener;
     }
 
@@ -42,14 +41,14 @@ public class AdapterRecyclerShopping extends RecyclerView.Adapter<AdapterRecycle
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
 
-        holder.textView1.setText(messageModelList.get(position).getShopping_list_name());
-        holder.textView2.setText(messageModelList.get(position).getDescription());
+        holder.textView1.setText(shoppingItems.get(position).getShopping_list_name());
+        holder.textView2.setText(shoppingItems.get(position).getDescription());
         holder.imageView.setImageResource(R.drawable.ic_baseline_shopping_cart_24);
     }
 
     @Override
     public int getItemCount() {
-        return messageModelList.size();
+        return shoppingItems.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

@@ -10,8 +10,6 @@ import pl.bsotniczuk.shoppinglist.data.dao.ShoppingDao
 import pl.bsotniczuk.shoppinglist.data.model.GroceryItem
 import pl.bsotniczuk.shoppinglist.data.model.ShoppingItem
 
-//@Database(entities = arrayOf(GroceryItem::class)/*entities = [GroceryItem::class]*/, version = 1, exportSchema = false)
-//@Database(entities = { arrayOf(GroceryItem::class), arrayOf(ShoppingItem::class) }, version = 1, exportSchema = false)
 @Database(entities = [GroceryItem ::class, ShoppingItem::class], version = 1, exportSchema = false)
 @TypeConverters(Converters::class)
 abstract class GroceryDatabase : RoomDatabase() {

@@ -34,9 +34,8 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
     AdapterRecyclerShopping adapter;
     List<ShoppingItem> shoppingList;
 
-    private ShoppingViewModel shoppingViewModel;
     AdapterRecyclerShopping.OnMessageClickListener onMessageClickListener;
-    static String tag = "ShoppingApp";
+    private AlertDialog alertToShow;
 
     public ShoppingListArchivedFragment() {
     }
@@ -60,12 +59,11 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
 
     @Override
     public void onMessageClick(int position) {
-        Log.i(tag, "position: " + position + " | clicked | id: " + shoppingList.get(position).getId() + " | time: " + shoppingList.get(position).getDate().getTime() + " | name: " + shoppingList.get(position).getShopping_list_name());
-        popUpTextBox(position, "Unarchive", "Do you want to unarchive that item?", "Yes", "No");
+        popUpTextBox(position, getString(R.string.unarchive), getString(R.string.to_unarchive), getString(R.string.yes), getString(R.string.no));
     }
 
     private void readDataFromDatabaseArchivedSortByDate() {
-        shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
+        ShoppingViewModel shoppingViewModel = new ViewModelProvider(this).get(ShoppingViewModel.class);
 
         final Observer<List<ShoppingItem>> groceryObserver2 = new Observer<List<ShoppingItem>>() {
             @Override
@@ -88,9 +86,7 @@ public class ShoppingListArchivedFragment extends Fragment implements AdapterRec
         shoppingViewModel.updateShoppingArchivedById(idOfShoppingItem, isArchived);
     }
 
-    private AlertDialog alertToShow;
-
-    public void popUpTextBox(int position, String title, String message, String positiveButtonText, String negativeButtonText) {
+    private void popUpTextBox(int position, String title, String message, String positiveButtonText, String negativeButtonText) {
         if (alertToShow != null && alertToShow.isShowing()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle(title);

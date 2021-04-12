@@ -32,6 +32,7 @@ public class GroceriesActivity extends AppCompatActivity {
 
     private int idInDb;
     List<ShoppingItem> shoppingList;
+    private AlertDialog alertToShow;
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Override
@@ -64,7 +65,7 @@ public class GroceriesActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 ensureNotNullShoppingItem();
-                popUpTextBox("Add new Grocery", "b", "add", "cancel");
+                popUpTextBox(getString(R.string.add_new_grocery), getString(R.string.add), getString(R.string.cancel));
             }
         });
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container, new GroceryListFragment()).commit();
@@ -104,6 +105,17 @@ public class GroceriesActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        backPressAction();
+        //super.onBackPressed();
+    }
+
+    private void backPressAction() {
+        MainActivity.groceriesActivityOpened = 0;
+        super.onBackPressed();
     }
 
     private void insertGroceryItem(int idOfShoppingItem, String nameOfGrocery, boolean isDone, int quantity) {
@@ -164,13 +176,10 @@ public class GroceriesActivity extends AppCompatActivity {
         shoppingViewModel.updateShoppingDescriptionById(id, description);
     }
 
-    private AlertDialog alertToShow;
-
-    public void popUpTextBox(String title, String message, String positiveButtonText, String negativeButtonText) {
+    private void popUpTextBox(String title, String positiveButtonText, String negativeButtonText) {
         if (alertToShow != null && alertToShow.isShowing()) return;
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(title);
-        //builder.setMessage(message);
 
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
@@ -178,12 +187,12 @@ public class GroceriesActivity extends AppCompatActivity {
         final EditText input_name = new EditText(this);
         input_name.setHint("Grocery Name");
         input_name.setInputType(InputType.TYPE_CLASS_TEXT);
-        layout.addView(input_name); // Notice this is an add method
+        layout.addView(input_name);
 
         final EditText input_quantity = new EditText(this);
         input_quantity.setHint("Quantity");
         input_quantity.setInputType(InputType.TYPE_CLASS_NUMBER);
-        layout.addView(input_quantity); // Another add method
+        layout.addView(input_quantity);
 
         builder.setView(layout);
 
@@ -191,16 +200,18 @@ public class GroceriesActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 int quantity;
+                String name = input_name.getText().toString();
 
-                if (input_quantity.getText().toString().compareToIgnoreCase("") == 0)
-                    quantity = 1; //when user didnt write anything set 1
-                else
+                try {
                     quantity = Integer.parseInt(input_quantity.getText().toString());
+                } catch (Exception e) {
+                    quantity = 1;
+                }
+                if (quantity < 1) quantity = 1;
 
-                if (input_name.getText().toString().compareToIgnoreCase("") == 0)
-                    insertGroceryItem(idInDb, "Some grocery", false, quantity);
-                else
-                    insertGroceryItem(idInDb, input_name.getText().toString(), false, quantity);
+                if (name.compareToIgnoreCase("") == 0 || name.length() > 30)
+                    insertGroceryItem(idInDb, getString(R.string.default_grocery_name), false, quantity);
+                else insertGroceryItem(idInDb, name, false, quantity);
             }
         });
         builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
@@ -212,16 +223,5 @@ public class GroceriesActivity extends AppCompatActivity {
         alertToShow = builder.create();
         alertToShow.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
         alertToShow.show();
-    }
-
-    @Override
-    public void onBackPressed() {
-        backPressAction();
-        //super.onBackPressed();
-    }
-
-    private void backPressAction() {
-        MainActivity.groceriesActivityOpened = 0;
-        super.onBackPressed();
     }
 }
